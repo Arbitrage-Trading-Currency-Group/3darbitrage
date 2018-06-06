@@ -1,6 +1,6 @@
 # Crypto Arbitrage
 ## Introduction
-This is an automatic trading bot using Triangular or Exchange Arbitrages. It reguarly checks and detects arbitrage opportunities, and place orders when a profit can be made. This works on any cryptocurrency pairs with minor configuration.  
+This is an automatic trading bot using Triangular or Exchange Arbitrages. It reguarly checks and detects arbitrage opportunities, and place orders when a profit can be made. This works on any cryptocurrency pairs with minor configuration.
 Started with $1000 in October 2017, there were some times that this made about $40/day for a few weeks with Triangular Arbitrage on Bittrex, but as the market is getting very unstable, the profit is hard to outrun the high price fluctuation.
 
 ## Exchanges
@@ -12,9 +12,13 @@ Bittrex, Bitfinex, Bitstamp, Kraken, Gatecoin (Not maintained anymore due to its
 2. Rename or copy `.key_sample` files under `keys` to `.key` file, and add the APIs. E.g. Create a file `bittrex.key` **Make sure you don't push any of your API keys.**
 3. Modify `arbitrage_config.json` for any other ticker pairs or exchanges
 
+## Docker Setup
+1. build docker image `docker build --tag 3darbitrage .`
+2. run docker image `docker run -it 3darbitrage [-m exchange]`
+
 ## Usage
-Triangular: `python main.py -m triangular`  
-Exchange:   `python main.py -m exchange`  
+Triangular: `python main.py -m triangular`
+Exchange:   `python main.py -m exchange`
 Mock mode is enabled by default, which does not place any order and just check and show any arbitrage opportunities. To turn off mock mode and run in production, add the argument `-p`.
 
 ## Difficulties
@@ -24,6 +28,6 @@ Mock mode is enabled by default, which does not place any order and just check a
 ## Further Improvement
 1. Implement exchange rebalancing
 2. Handle open orders strategically
-3. Refactoring  
+3. Refactoring
 
 I will put this project on hold now as the price goes up and down so much. Hope this can help anyone with similar interests.

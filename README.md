@@ -6,15 +6,17 @@ Started with $1000 in October 2017, there were some times that this made about $
 ## Exchanges
 Bittrex, Bitfinex, Bitstamp, Kraken, Gatecoin (Not maintained anymore due to its extremely low volume)
 
-## Setup
+## Docker Setup
+0. install docker
+1. build image `make build`
+2. develop `make dev`
+3. build `make build`
+
+## Non-Docker Setup
 1. `pip install grequests`
 [for error, see: https://github.com/tensorflow/tensorflow/issues/15030]
 2. Rename or copy `.key_sample` files under `keys` to `.key` file, and add the APIs. E.g. Create a file `bittrex.key` **Make sure you don't push any of your API keys.**
 3. Modify `arbitrage_config.json` for any other ticker pairs or exchanges
-
-## Docker Setup
-1. build docker image `docker build --tag 3darbitrage .`
-2. run docker image `docker run -it 3darbitrage [-m exchange]`
 
 ## Usage
 Triangular: `python main.py -m triangular`

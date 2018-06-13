@@ -10,17 +10,19 @@ RUN pip install grequests
 WORKDIR /tmp/3darbitrage
 
 # add all the files that we need into the container
-ADD keys/bitfinex.key_sample keys/bitfinex.key
-ADD keys/bitstamp.key_sample keys/bitstamp.key
-ADD keys/bittrex.key_sample  keys/bittrex.key
-ADD keys/gatecoin.key_sample keys/gatecoin.key
-ADD keys/kraken.key_sample   keys/bitfinex.key
+# removed _sample from first part keys
+
+ADD keys/bitfinex.key keys/bitfinex.key
+ADD keys/bitstamp.key keys/bitstamp.key
+ADD keys/bittrex.key  keys/bittrex.key
+ADD keys/gatecoin.key keys/gatecoin.key
+ADD keys/kraken.key   keys/bitfinex.key
 ADD arbitrage_config.json    arbitrage_config.json
 ADD main.py                  main.py
 ADD engines                  engines
 
-# set the entrypoint equivalant of 'python main.py'
-ENTRYPOINT ["python", "main.py"]
+# set the entrypoint equivalant of 'python main.py' (disabled)
+#ENTRYPOINT ["python", "main.py"]
 
-# run the '-m triangular' option by default
-CMD ["-m", "triangular"]
+# run the '-m triangular' option by default (disabled)
+# CMD ["-m", "triangular"]

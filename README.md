@@ -5,6 +5,7 @@ Started with $1000 in October 2017, there were some times that this made about $
 
 ## Exchanges
 Bittrex, Bitfinex, Bitstamp, Kraken, Gatecoin (Not maintained anymore due to its extremely low volume)
+FUTURE: EXMO, POLONIEX
 
 ## Docker Setup
 0. install docker
@@ -14,7 +15,7 @@ Bittrex, Bitfinex, Bitstamp, Kraken, Gatecoin (Not maintained anymore due to its
 
 ## Non-Docker Setup
 1. `pip install grequests`
-[for error, see: https://github.com/tensorflow/tensorflow/issues/15030]
+[for error, see: https://github.com/tensorflow/tensorflow/issues/15030] //  pip3 install --upgrade
 2. Rename or copy `.key_sample` files under `keys` to `.key` file, and add the APIs. E.g. Create a file `bittrex.key` **Make sure you don't push any of your API keys.**
 3. Modify `arbitrage_config.json` for any other ticker pairs or exchanges
 

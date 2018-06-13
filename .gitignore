@@ -1,4 +1,4 @@
-keys/*.key
-*~
-.#*
-*.pyc
+#keys/*.key
+#*~
+#.#*
+#*.pyc

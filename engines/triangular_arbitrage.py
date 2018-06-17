@@ -1,7 +1,7 @@
 import time
 from time import strftime
 import grequests
-import os 
+import os
 import sys
 from exchanges.loader import EngineLoader
 
@@ -12,7 +12,6 @@ class CryptoEngineTriArbitrage(object):
         self.minProfitUSDT = 0.3
         self.hasOpenOrder = True # always assume there are open orders first
         self.openOrderCheckCount = 0
-      
         self.engine = EngineLoader.getEngine(self.exchange['exchange'], self.exchange['keyFile'])
 
     def start_engine(self):
@@ -24,28 +23,30 @@ class CryptoEngineTriArbitrage(object):
             try:
                 if not self.mock and self.hasOpenOrder:
                     self.check_openOrder()
-                elif self.check_balance():           
+                elif self.check_balance():
                     bookStatus = self.check_orderBook()
                     if bookStatus['status']:
                         self.place_order(bookStatus['orderInfo'])
             except Exception, e:
                # raise
                print e
-            
+
             time.sleep(self.engine.sleepTime)
-    
+
     def check_openOrder(self):
         if self.openOrderCheckCount >= 5:
             self.cancel_allOrders()
         else:
             print 'checking open orders...'
+# How many times must rs be declared? What is it for?
+
             rs = [self.engine.get_open_order()]
             responses = self.send_request(rs)
 
             if not responses[0]:
                 print responses
                 return False
-            
+
             if responses[0].parsed:
                 self.engine.openOrders = responses[0].parsed
                 print self.engine.openOrders
@@ -54,7 +55,7 @@ class CryptoEngineTriArbitrage(object):
                 self.hasOpenOrder = False
                 print 'no open orders'
                 print 'starting to check order book...'
-    
+
     def cancel_allOrders(self):
         print 'cancelling all open orders...'
         rs = []
@@ -64,10 +65,10 @@ class CryptoEngineTriArbitrage(object):
             rs.append(self.engine.cancel_order(order['orderId']))
 
         responses = self.send_request(rs)
-        
+
         self.engine.openOrders = []
         self.hasOpenOrder = False
-        
+
 
     #Check and set current balance
     def check_balance(self):
@@ -89,12 +90,13 @@ class CryptoEngineTriArbitrage(object):
         #                 print ticker, res.parsed[ticker], '- Not Enough'
         #                 return False
         return True
-    
+
     def check_orderBook(self):
         rs = [self.engine.get_ticker_lastPrice(self.exchange['tickerA']),
             self.engine.get_ticker_lastPrice(self.exchange['tickerB']),
             self.engine.get_ticker_lastPrice(self.exchange['tickerC']),
         ]
+
         lastPrices = []
         for res in self.send_request(rs):
             lastPrices.append(next(res.parsed.itervalues()))
@@ -105,7 +107,7 @@ class CryptoEngineTriArbitrage(object):
               ]
 
         responses = self.send_request(rs)
-        
+
         if self.mock:
             print '{0} - {1}; {2} - {3}; {4} - {5}'.format(
                 self.exchange['tickerPairA'],
@@ -115,16 +117,16 @@ class CryptoEngineTriArbitrage(object):
                 self.exchange['tickerPairC'],
                 responses[2].parsed
                 )
-        
+
         # bid route BTC->ETH->LTC->BTC
         bidRoute_result = (1 / responses[0].parsed['ask']['price']) \
                             / responses[1].parsed['ask']['price']   \
-                            * responses[2].parsed['bid']['price']  
+                            * responses[2].parsed['bid']['price']
         # ask route ETH->BTC->LTC->ETH
         askRoute_result = (1 * responses[0].parsed['bid']['price']) \
                             / responses[2].parsed['ask']['price']   \
                             * responses[1].parsed['bid']['price']
-        
+
         # Max amount for bid route & ask routes can be different and so less profit
         if bidRoute_result > 1 or \
         (bidRoute_result > 1 and askRoute_result > 1 and (bidRoute_result - 1) * lastPrices[0] > (askRoute_result - 1) * lastPrices[1]):
@@ -133,14 +135,14 @@ class CryptoEngineTriArbitrage(object):
             status = 2 # ask route
         else:
             status = 0 # do nothing
-        
+
         if status > 0:
             maxAmounts = self.getMaxAmount(lastPrices, responses, status)
             fee = 0
             for index, amount in enumerate(maxAmounts):
                 fee += amount * lastPrices[index]
             fee *= self.engine.feeRatio
-            
+
             bidRoute_profit = (bidRoute_result - 1) * lastPrices[0] * maxAmounts[0]
             askRoute_profit = (askRoute_result - 1) * lastPrices[1] * maxAmounts[1]
             # print 'bidRoute_profit - {0} askRoute_profit - {1} fee - {2}'.format(
@@ -166,7 +168,7 @@ class CryptoEngineTriArbitrage(object):
                         "action": "ask",
                         "price": responses[2].parsed['bid']['price'],
                         "amount": maxAmounts[2]
-                    }                                        
+                    }
                 ]
                 return {'status': 1, "orderInfo": orderInfo}
             elif status == 2 and askRoute_profit - fee > self.minProfitUSDT:
@@ -189,8 +191,8 @@ class CryptoEngineTriArbitrage(object):
                         "action": "bid",
                         "price": responses[2].parsed['ask']['price'],
                         "amount": maxAmounts[2]
-                    }                                        
-                ]               
+                    }
+                ]
                 return {'status': 2, 'orderInfo': orderInfo}
         return {'status': 0}
 
@@ -205,16 +207,16 @@ class CryptoEngineTriArbitrage(object):
             # switch for ask route
             if status == 2: bid_ask *= -1
             bid_ask = 'bid' if bid_ask == 1 else 'ask'
-            
+
             maxBalance = min(orderBookRes[index].parsed[bid_ask]['amount'], self.engine.balance[self.exchange[tickerIndex]])
             # print '{0} orderBookAmount - {1} ownAmount - {2}'.format(
-            #     self.exchange[tickerIndex], 
-            #     orderBookRes[index].parsed[bid_ask]['amount'], 
+            #     self.exchange[tickerIndex],
+            #     orderBookRes[index].parsed[bid_ask]['amount'],
             #     self.engine.balance[self.exchange[tickerIndex]]
             # )
             USDT = maxBalance * lastPrices[index] * (1 - self.engine.feeRatio)
-            if not maxUSDT or USDT < maxUSDT: 
-                maxUSDT = USDT       
+            if not maxUSDT or USDT < maxUSDT:
+                maxUSDT = USDT
 
         maxAmounts = []
         for index, tickerIndex in enumerate(['tickerA', 'tickerB', 'tickerC']):
@@ -261,7 +263,7 @@ if __name__ == '__main__':
         'tickerA': 'BTC',
         'tickerB': 'ETH',
         'tickerC': 'LTC'
-    }    
+    }
     engine = CryptoEngineTriArbitrage(exchange, True)
     #engine = CryptoEngineTriArbitrage(exchange)
     engine.run()

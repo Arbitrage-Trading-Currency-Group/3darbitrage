@@ -21,8 +21,8 @@ class ExchangeEngine(ExchangeEngineBase):
         self.sleepTime = 5
         self.feeRatio = 0.002
         self.async = True
-        
-    def _send_request(self, command, httpMethod, params={}, hook=None):          
+
+    def _send_request(self, command, httpMethod, params={}, hook=None):
         command = '/{0}/{1}'.format(self.apiVersion, command)
 
         url = self.API_URL + command
@@ -30,39 +30,39 @@ class ExchangeEngine(ExchangeEngineBase):
         if httpMethod == "GET":
             R = grequests.get
         elif httpMethod == "POST":
-            R = grequests.post          
-            
+            R = grequests.post
+
             secret = self.key['private']
             params['request'] = command
             params['nonce'] = str(long(1000000*time.time()))
-            
+
             j = json.dumps(params)
             message = base64.standard_b64encode(j.encode('utf8'))
-            
+
             signature = hmac.new(secret.encode('utf8'), message, hashlib.sha384)
             signature = signature.hexdigest()
-            
+
             headers = {
                 'X-BFX-APIKEY': self.key['public'],
                 'X-BFX-PAYLOAD': message,
                 'X-BFX-SIGNATURE': signature
-            }       
-               
+            }
+
         args = {'data': params, 'headers': headers}
         if hook:
             args['hooks'] = dict(response=hook)
-            
+
         req = R(url, **args)
         if self.async:
             return req
         else:
             response = grequests.map([req])[0].json()
-            
+
             if 'error' in response:
                 print response
-            return response    
-    
-    
+            return response
+
+
     '''
         return in r.parsed, showing all and required tickers
         {
@@ -72,27 +72,27 @@ class ExchangeEngine(ExchangeEngineBase):
     '''
     def get_balance(self, tickers=[]):
         return self._send_request('balances', 'POST', {}, [self.hook_getBalance(tickers=tickers)])
-    
+
     def hook_getBalance(self, *factory_args, **factory_kwargs):
         def res_hook(r, *r_args, **r_kwargs):
             json = r.json()
             r.parsed = {}
-            
+
             if factory_kwargs['tickers']:
                 json = filter(lambda ticker: ticker['currency'].upper() in factory_kwargs['tickers'], json)
-                
+
             for ticker in json:
                 r.parsed[ticker['currency'].upper()] = float(ticker['amount'])
-                    
-                                  
-        return res_hook    
+
+
+        return res_hook
 
     '''
         return USDT in r.parsed
         {
-            'BTC': 18000    
+            'BTC': 18000
         }
-    '''       
+    '''
     def get_ticker_lastPrice(self, ticker):
          return self._send_request('pubticker/{0}'.format(ticker), 'GET', {}, [self.hook_lastPrice(ticker=ticker)])
 
@@ -101,8 +101,8 @@ class ExchangeEngine(ExchangeEngineBase):
             json = r.json()
             r.parsed = {}
             r.parsed[factory_kwargs['ticker']] = float(json['last_price'])
-                                  
-        return res_hook    
+
+        return res_hook
 
     '''
         return in r.parsed
@@ -114,12 +114,12 @@ class ExchangeEngine(ExchangeEngineBase):
             'ask': {
                 'price': 0.02400,
                 'amount': 103.2
-            },           
+            },
         }
     '''
-    def get_ticker_orderBook_innermost(self, ticker): 
-        return self._send_request('book/{0}'.format(ticker), 'GET', {}, self.hook_orderBook)  
-    
+    def get_ticker_orderBook_innermost(self, ticker):
+        return self._send_request('book/{0}'.format(ticker), 'GET', {}, self.hook_orderBook)
+
     def hook_orderBook(self, r, *r_args, **r_kwargs):
         json = r.json()
         r.parsed = {
@@ -132,7 +132,7 @@ class ExchangeEngine(ExchangeEngineBase):
                              'amount': float(json['asks'][0]['amount'])
                             }
                     }
-    
+
     '''
         return in r.parsed
         [
@@ -140,16 +140,16 @@ class ExchangeEngine(ExchangeEngineBase):
                 'orderId': 1242424
             }
         ]
-    '''        
+    '''
     def get_open_order(self):
-        return self._send_request('orders', 'POST', {}, self.hook_openOrder) 
-       
+        return self._send_request('orders', 'POST', {}, self.hook_openOrder)
+
     def hook_openOrder(self, r, *r_args, **r_kwargs):
         json = r.json()
         r.parsed = []
         for order in json:
             r.parsed.append({'orderId': order['id'], 'created': order['timestamp']})
-        
+
     '''
         ticker: 'OMGETH'
         action: 'bid' or 'ask'
@@ -160,36 +160,36 @@ class ExchangeEngine(ExchangeEngineBase):
         action = 'buy' if action == 'bid' else 'sell'
         data = {'symbol': ticker, 'side': action, 'amount': str(amount), 'price': str(price), 'exchange': 'bitfinex', 'type': 'exchange limit'}
         return self._send_request('order/new', 'POST', data)
-  
+
     def cancel_order(self, orderID):
-        return self._send_request('order/cancel', 'POST', {'order_id': long(orderID)})    
-    
-    
-    
+        return self._send_request('order/cancel', 'POST', {'order_id': long(orderID)})
+
+
+
     ''' bitfinex doesn't provide external withdrawal api
     def withdraw(self, amount, address):
         data = {'withdraw_type': 'OMG', 'walletselected': 'exchange', 'amount': amount, 'address': address}
         return self._send_request('account_infos', data)
     '''
-    
-   
-    
+
+
+
 if __name__ == "__main__":
     engine = ExchangeEngine()
     engine.load_key('../../keys/bitfinex.key')
     #print engine.get_balance()
     for res in grequests.map([engine.get_ticker_lastPrice('BTCUSD')]):
         print res.parsed
-        pass    
+        pass
 
     # for res in grequests.map([engine.cancel_order('525113932211')]):
     #     print res.json()
-    #     pass    
+    #     pass
 
 #     for res in grequests.map([engine.place_order('OMGETH', 'bid', 5, 0.02)]):
 #         print res.json()
 #         pass
-#        
+#
     #print engine.get_open_order()
     #engine.place_order('OMGETH', 'bid', 40, 0.01)
     #print engine.get_ticker_orderBook('OMGETH')

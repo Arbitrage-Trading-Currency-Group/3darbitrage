@@ -183,7 +183,6 @@ class CryptoEngineExArbitrage(object):
             rs = [
                 self.engineB.place_order(self.exParams['exchangeB']['tickerPair'], 'bid', amount, ask),
                 self.engineA.place_order(self.exParams['exchangeA']['tickerPair'], 'ask', amount, bid),
-            ]
 
         if not self.mock:
             responses = self.send_request(rs)

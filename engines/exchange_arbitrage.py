@@ -8,7 +8,6 @@ class CryptoEngineExArbitrage(object):
         self.exParams = exParams
         self.mock = mock
         self.minProfit = 0.00005 # This may not be accurate as coins have different value
-        # change to a % profit?
         self.hasOpenOrder = True # always assume there are open orders first
         self.openOrderCheckCount = 0
 
@@ -183,6 +182,7 @@ class CryptoEngineExArbitrage(object):
             rs = [
                 self.engineB.place_order(self.exParams['exchangeB']['tickerPair'], 'bid', amount, ask),
                 self.engineA.place_order(self.exParams['exchangeA']['tickerPair'], 'ask', amount, bid),
+            ]
 
         if not self.mock:
             responses = self.send_request(rs)

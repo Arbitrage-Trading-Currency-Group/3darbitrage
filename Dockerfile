@@ -15,7 +15,7 @@ WORKDIR /tmp/3darbitrage
 ADD keys/bitfinex.key keys/bitfinex.key
 ADD keys/bitstamp.key keys/bitstamp.key
 ADD keys/bittrex.key  keys/bittrex.key
-ADD keys/gatecoin.key keys/gatecoin.key
+# ADD keys/gatecoin.key keys/gatecoin.key
 ADD keys/kraken.key   keys/bitfinex.key
 ADD arbitrage_config.json    arbitrage_config.json
 ADD main.py                  main.py

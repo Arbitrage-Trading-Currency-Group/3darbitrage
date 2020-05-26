@@ -103,7 +103,7 @@ class CryptoEngineTriArbitrage(object):
 
         rs = [self.engine.get_ticker_orderBook_innermost(self.exchange['tickerPairA']),
               self.engine.get_ticker_orderBook_innermost(self.exchange['tickerPairB']),
-              self.engine.get_ticker_orderBook_innermost(self.exchange['tickerPairC']),
+              self.engine.get_ticker_orderBook_innermost(self.exchange['tickerPairC'])
               ]
 
         responses = self.send_request(rs)
